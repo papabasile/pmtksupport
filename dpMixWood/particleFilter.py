@@ -136,18 +136,13 @@ class ParticleFilter(object):
         
         putative_particles=np.zeros((2,M))
         putative_weights=np.ones((1,M))
-
         putative_pf=np.exp(self.lp_tpp_helper_(pc_max_ind,pc_gammaln_by_2,pc_log_pi,pc_log,y,0,[],[],k_0,mu_0,v_0,lambda_0)[0])
 
-        #pdb.set_trace()
         ppps=[]
         for t in xrange(index_at_which_to_start_estimation,T):#was T
             tic = time.clock()
             y=training_data[:,[t]]
             
-            #if t%100==0:
-            #    pdb.set_trace()
-
             #si and ei are the starting and ending indexes of the K_plus(n)+1
             #distinct putative particles that are generated from particle n
             si=0
@@ -190,14 +185,8 @@ class ParticleFilter(object):
                 si=ei
                 if n != N-1:
                     ei=si + K_plus[n+1,cp] + 1
-                
-                if putative_particles[1,:].max()==counts.shape[0]:
-                    print '...............................................yeeeeeeysssss'
-
+            
             ppps.append(sumppps)
-            #perm=np.random.permutation(putative_weights.shape[1])
-            #putative_weights=putative_weights[:,perm]
-            #putative_particles=putative_particles[:,perm]
             
             ticResample=time.clock()
 
@@ -217,14 +206,11 @@ class ParticleFilter(object):
 
             yyT=y.dot(y.T)
 
-            #pdb.set_trace()
             if num_pass > 0:
                 particles[0:num_pass,0:t ,np_var]=particles[[putative_particles[0,pass_inds]],0:t ,cp]
                 particles[0:num_pass,t,np_var]=putative_particles[1,pass_inds]
                 weights[0:num_pass,np_var]=putative_weights[0,pass_inds]
                 
-                #pdb.set_trace()
-
                 passing_class_id_ys=putative_particles[1,pass_inds]
                 passing_orig_partical_ids=putative_particles[0,pass_inds]
                 for npind in xrange(num_pass):
@@ -317,7 +303,6 @@ class ParticleFilter(object):
                 print 'CRP PF:: Obs: ',t,'/',T
             else:
                 if t % 5 == 0:
-                    #pdb.set_trace()
                     rem_time=(time_1_obs * 0.05 + 0.95 * (total_time / t)) * T - total_time
                     if rem_time < 0:
                         rem_time=0
@@ -331,9 +316,7 @@ class ParticleFilter(object):
             putative_pf=np.exp(self.lp_tpp_helper_(pc_max_ind,pc_gammaln_by_2,pc_log_pi,pc_log,y,0,[],[],k_0,mu_0,v_0,lambda_0)[0])
             
             resampleTimes.append(time.clock()-ticResample)
-            #pdb.set_trace()
-            #if t % 100 ==0:
-            #    pickle.dump(resampleTimes,open('/tmp/particleSequentialResampleTimes','w'))
+            
         ret_particles=np.squeeze(particles[:,:,cp])
         ret_weights=np.squeeze(weights[:,cp])
         ret_K_plus=np.squeeze(K_plus[:,cp])
